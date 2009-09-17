@@ -73,14 +73,25 @@ class CODInfo
     data
   end
 
+  Server = Struct.new(:ip, :port)
   def parse_serversResponse(data)
-      #p resp
       data = expect_response(data, "getserversResponse")
-      p data[0, 6]
-      p data[0, 6].split(//).map { |x| x[0] }
-      p data.size
-      #EOT
-      data
+
+      data = data.split(/\\/)
+      # TODO why?
+      raise "error!?" unless data[0] == "\0"
+      raise "no EOT" unless data.last == 'EOT'
+      data[1..-2].map do |x|
+        if x.size != 6
+          puts "x.size != 6"
+          next
+        end
+        ip = x[0, 4]
+        port = x[4, 2].unpack('n').first
+
+        Server.new(ip, port)
+      end.compact
+      #TODO check the final EOT
   end
 
   def parse_infoResponse(data)
