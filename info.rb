@@ -5,7 +5,8 @@
 #
 # It's not usable right now!
 #
-# by lparravi@gmail.com
+# By Luis Parravicini <lparravi@gmail.com>
+#
 
 require 'socket'
 
@@ -21,14 +22,8 @@ host = ARGV.shift
 port = ARGV.shift
 
 
-# devuelve info de jugadores
+# players info
 #cmd = "getstatus"
-
-# cuando refresca la lista del "master game server"
-# ahora solo leo 1 paquete pero en lo snifeado, hay muchos paquetes
-# de respuesta (es una lista de ~18k servidores)
-#host = "63.146.124.21"
-#port = 20810
 
 def expect_response(resp, msg)
   cmd, data = resp.first.split("\n", 2)
@@ -74,7 +69,8 @@ module CODInfo
     end
   end
 
-  def self.get_servers(host, port=20810)
+  # the default ip is queried by the game to refresh the server list
+  def self.get_servers(host='63.146.124.21', port=20810)
     # TODO 6 ?
     cmd = "getservers 6 full empty"
     #TODO need to read all the responses, not just the first
