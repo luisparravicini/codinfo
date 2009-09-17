@@ -21,6 +21,8 @@ PROLOG = "\xff\xff\xff\xff"
 host = ARGV.shift
 port = ARGV.shift
 
+raise "usage: #{$0} <host> [port]" if host.nil?
+
 
 # players info
 #cmd = "getstatus"
@@ -44,7 +46,7 @@ def parse_infoResponse(data)
   data.split("\\")[1..-1].each_slice(2) { |x| server[x.first] = x.last }
 
   sep = "\t|\t"
-  puts [ server['clients'], '/',
+  puts [ server['clients'] || 0, '/',
     server['sv_maxclients'], sep, server['mapname'], sep,
     server['gametype'], sep, server['hostname']
   ].join
@@ -89,7 +91,11 @@ module CODInfo
 
     socket = UDPSocket.new
     socket.send(msg, 0, host, port)
-    resp = socket.recvfrom(65536) if select([socket], nil, nil, TIMEOUT)
+    if select([socket], nil, nil, TIMEOUT)
+      resp = socket.recvfrom(65536)
+    else
+      raise "timeout waiting for data"
+    end
 
     yield(resp, socket)
 
@@ -99,5 +105,5 @@ module CODInfo
 end
 
 
-#CODInfo.get_info(host, port)
-CODInfo.get_servers(host, port)
+CODInfo.get_info(host, port)
+#CODInfo.get_servers(host, port)
