@@ -58,10 +58,9 @@ module CODInfo
     # what the game sends.
     cmd = "getinfo xxx"
     CODInfo.request(cmd, host, port) do |resp, _|
-      unless resp.nil?
+      break if resp.nil?
       #p resp
-        parse_infoResponse(resp)
-      end
+      parse_infoResponse(resp)
     end
   end
 
@@ -72,14 +71,13 @@ module CODInfo
     cmd = "getservers 6 full empty"
     #TODO need to read all the responses, not just the first
     CODInfo.request(cmd, host, port) do |resp, _|
-      unless resp.nil?
+      break if resp.nil?
       #p resp
-        data = expect_response(resp, "getserversResponse")
-        p data[0, 6]
-        p data[0, 6].split(//).map { |x| x[0] }
-        p data.size
-        #EOT
-      end
+      data = expect_response(resp, "getserversResponse")
+      p data[0, 6]
+      p data[0, 6].split(//).map { |x| x[0] }
+      p data.size
+      #EOT
     end
   end
 
