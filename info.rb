@@ -26,31 +26,6 @@ raise "usage: #{$0} <host> [port]" if host.nil?
 # players info
 #cmd = "getstatus"
 
-def expect_response(resp, msg)
-  cmd, data = resp.first.split("\n", 2)
-
-  raise "invalid response header" unless cmd[0, 4] == PROLOG
-  resp_msg = cmd[4..-1]
-  unless resp_msg.chomp == msg
-    raise "invalid response (#{msg} != #{resp_msg})"
-  end
-
-  data
-end
-
-def parse_infoResponse(data)
-  data = expect_response(data, "infoResponse")
-
-  server = Hash.new
-  data.split("\\")[1..-1].each_slice(2) { |x| server[x.first] = x.last }
-
-  sep = "\t|\t"
-  puts [ server['clients'] || 0, '/',
-    server['sv_maxclients'], sep, server['mapname'], sep,
-    server['gametype'], sep, server['hostname']
-  ].join
-end
-
 module CODInfo
   def self.get_info(host, port=28960)
     port ||= 28960
@@ -83,20 +58,47 @@ module CODInfo
 
   private
 
+  def self.expect_response(resp, msg)
+    cmd, data = resp.first.split("\n", 2)
+
+    raise "invalid response header" unless cmd[0, 4] == PROLOG
+    resp_msg = cmd[4..-1]
+    unless resp_msg.chomp == msg
+      raise "invalid response (#{msg} != #{resp_msg})"
+    end
+
+    data
+  end
+
+  def self.parse_infoResponse(data)
+    data = expect_response(data, "infoResponse")
+
+    server = Hash.new
+    data.split("\\")[1..-1].each_slice(2) { |x| server[x.first] = x.last }
+
+    sep = "\t|\t"
+    puts [ server['clients'] || 0, '/',
+      server['sv_maxclients'], sep, server['mapname'], sep,
+      server['gametype'], sep, server['hostname']
+    ].join
+  end
+
+
   def self.request(cmd, host, port)
     msg = "#{PROLOG}#{cmd}"
 
     socket = UDPSocket.new
-    socket.send(msg, 0, host, port)
-    if select([socket], nil, nil, TIMEOUT)
+    begin
+      socket.send(msg, 0, host, port)
+      unless select([socket], nil, nil, TIMEOUT)
+        raise "timeout waiting for #{host}:#{port} data"
+      end
+
       resp = socket.recvfrom(65536)
-    else
-      raise "timeout waiting for data"
+      yield(resp, socket)
+    ensure
+      socket.close
     end
-
-    yield(resp, socket)
-
-    socket.close
   end
 
 end
