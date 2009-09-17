@@ -3,7 +3,6 @@
 #
 # Script to get information on cod4 servers.
 #
-# It's not usable right now!
 #
 # By Luis Parravicini <lparravi@gmail.com>
 #
