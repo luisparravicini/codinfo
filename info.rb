@@ -21,19 +21,14 @@ host = ARGV.shift
 port = ARGV.shift || 28960
 
 
-# devuelve info, igual a getinfo, pero esto es lo snifeado
-#cmd = "getinfo xxx"
-# igual que el anterio
-#cmd = "getinfo"
-
 # devuelve info de jugadores
 #cmd = "getstatus"
 
 # cuando refresca la lista del "master game server"
 # ahora solo leo 1 paquete pero en lo snifeado, hay muchos paquetes
 # de respuesta (es una lista de ~18k servidores)
-host = "63.146.124.21"
-port = 20810
+#host = "63.146.124.21"
+#port = 20810
 # el 6 creo que son las opciones de filtrado
 cmd = "getservers 6 full empty"
 
@@ -68,13 +63,51 @@ socket = UDPSocket.new
 socket.send(msg, 0, host, port)
 resp = socket.recvfrom(65536) if select([socket], nil, nil, TIMEOUT)
 
-unless resp.nil?
-#p resp
-#  parse_infoResponse(resp)
-  data = expect_response(resp, "getserversResponse")
-p data[0, 4]
-p data[0, 4].split(//).map { |x| x[0] }
-p data.size
+module CODInfo
+  def self.get_info(host, port=28960)
+    #TODO what is the xxx? sending 'getinfo' also works. but the 'xxx' is
+    # what the game sends.
+    cmd = "getinfo xxx"
+    CODInfo.request(cmd, host, port) do |resp, _|
+      unless resp.nil?
+      #p resp
+        parse_infoResponse(resp)
+      end
+    end
+  end
+
+  def self.get_servers(host, port=20810)
+    # TODO 6 ?
+    cmd = "getservers 6 full empty"
+    #TODO need to read all the responses, not just the first
+    CODInfo.request(cmd, host, port) do |resp, _|
+      unless resp.nil?
+      #p resp
+        data = expect_response(resp, "getserversResponse")
+        p data[0, 6]
+        p data[0, 6].split(//).map { |x| x[0] }
+        p data.size
+        #EOT
+      end
+    end
+  end
+
+  private
+
+  def self.request(cmd, host, port)
+    msg = "#{PROLOG}#{cmd}"
+
+    socket = UDPSocket.new
+    socket.send(msg, 0, host, port)
+    resp = socket.recvfrom(65536) if select([socket], nil, nil, TIMEOUT)
+
+    yield(resp, socket)
+
+    socket.close
+  end
+
 end
 
-socket.close
+
+#CODInfo.get_info(host, port)
+CODInfo.get_servers(host, port)
