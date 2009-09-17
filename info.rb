@@ -10,10 +10,6 @@
 require 'socket'
 
 
-#
-# parece que es casi igual al protocolo del Q3
-#
-
 TIMEOUT = 3
 PROLOG = "\xff\xff\xff\xff"
 
