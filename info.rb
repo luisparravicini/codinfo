@@ -18,7 +18,7 @@ TIMEOUT = 3
 PROLOG = "\xff\xff\xff\xff"
 
 host = ARGV.shift
-port = ARGV.shift || 28960
+port = ARGV.shift
 
 
 # devuelve info de jugadores
@@ -29,8 +29,6 @@ port = ARGV.shift || 28960
 # de respuesta (es una lista de ~18k servidores)
 #host = "63.146.124.21"
 #port = 20810
-# el 6 creo que son las opciones de filtrado
-cmd = "getservers 6 full empty"
 
 def expect_response(resp, msg)
   cmd, data = resp.first.split("\n", 2)
