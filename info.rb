@@ -17,19 +17,16 @@ require 'socket'
 TIMEOUT = 3
 PROLOG = "\xff\xff\xff\xff"
 
-host = ARGV.shift
-port = ARGV.shift
 
-raise "usage: #{$0} <host> [port]" if host.nil?
+class CODInfo
+  attr_accessor :capture_response
 
-
-module CODInfo
-  def self.get_info(host, port=28960)
+  def get_info(host, port=28960)
     port ||= 28960
     #TODO what is the xxx? sending 'getinfo' also works. but the 'xxx' is
     # what the game sends.
     cmd = "getinfo xxx"
-    CODInfo.request(cmd, host, port) do |resp, _|
+    request(cmd, host, port) do |resp, _|
       break if resp.nil?
       #p resp
       server = parse_infoResponse(resp)
@@ -42,10 +39,10 @@ module CODInfo
     end
   end
 
-  def self.get_status(host, port=28960)
+  def get_status(host, port=28960)
     port ||= 28960
     cmd = "getstatus"
-    CODInfo.request(cmd, host, port) do |resp, _|
+    request(cmd, host, port) do |resp, _|
       break if resp.nil?
       server = parse_statusResponse(resp)
 
@@ -54,25 +51,21 @@ module CODInfo
   end
 
   # the default ip is queried by the game to refresh the server list
-  def self.get_servers(host='63.146.124.21', port=20810)
+  def get_servers(host='63.146.124.21', port=20810)
+    host ||= '63.146.124.21'
     port ||= 20810
     # TODO 6 ?
     cmd = "getservers 6 full empty"
     #TODO need to read all the responses, not just the first
-    CODInfo.request(cmd, host, port) do |resp, _|
+    request(cmd, host, port) do |resp, _|
       break if resp.nil?
-      #p resp
-      data = expect_response(resp, "getserversResponse")
-      p data[0, 6]
-      p data[0, 6].split(//).map { |x| x[0] }
-      p data.size
-      #EOT
+      server = parse_serversResponse(resp)
     end
   end
 
-  private
+#  private
 
-  def self.expect_response(resp, msg)
+  def expect_response(resp, msg)
     cmd, data = resp.first.split("\n", 2)
 
     raise "invalid response header" unless cmd[0, 4] == PROLOG
@@ -84,7 +77,17 @@ module CODInfo
     data
   end
 
-  def self.parse_infoResponse(data)
+  def parse_serversResponse(data)
+      #p resp
+      data = expect_response(data, "getserversResponse")
+      p data[0, 6]
+      p data[0, 6].split(//).map { |x| x[0] }
+      p data.size
+      #EOT
+      data
+  end
+
+  def parse_infoResponse(data)
     data = expect_response(data, "infoResponse")
 
     server = Hash.new
@@ -93,7 +96,7 @@ module CODInfo
     server
   end
 
-  def self.parse_statusResponse(data)
+  def parse_statusResponse(data)
     data = expect_response(data, "statusResponse")
 
     server = Hash.new
@@ -103,7 +106,7 @@ module CODInfo
   end
 
 
-  def self.request(cmd, host, port)
+  def request(cmd, host, port)
     msg = "#{PROLOG}#{cmd}"
 
     socket = UDPSocket.new
@@ -114,15 +117,33 @@ module CODInfo
       end
 
       resp = socket.recvfrom(65536)
+      write_packet(resp.first) if capture_response
+
       yield(resp, socket)
     ensure
       socket.close
     end
   end
 
+  def write_packet(resp)
+    File.open('responses', 'a') do |f|
+      f.write([resp.size].pack('n'))
+      f.write(resp)
+    end
+  end
+
 end
 
 
-#CODInfo.get_info(host, port)
-CODInfo.get_status(host, port)
-#CODInfo.get_servers(host, port)
+if __FILE__ == $0
+  host = ARGV.shift
+  port = ARGV.shift
+
+  raise "usage: #{$0} <host> [port]" if host.nil?
+
+  info = CODInfo.new
+#  info.capture_response = true
+  info.get_info(host, port)
+#  info.get_status(host, port)
+#  info.get_servers(host, port)
+end
