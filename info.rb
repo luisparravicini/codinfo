@@ -23,9 +23,6 @@ port = ARGV.shift
 raise "usage: #{$0} <host> [port]" if host.nil?
 
 
-# players info
-#cmd = "getstatus"
-
 module CODInfo
   def self.get_info(host, port=28960)
     port ||= 28960
@@ -35,7 +32,24 @@ module CODInfo
     CODInfo.request(cmd, host, port) do |resp, _|
       break if resp.nil?
       #p resp
-      parse_infoResponse(resp)
+      server = parse_infoResponse(resp)
+
+      sep = "\t|\t"
+      puts [ server['clients'] || 0, '/',
+        server['sv_maxclients'], sep, server['mapname'], sep,
+        server['gametype'], sep, server['hostname']
+      ].join
+    end
+  end
+
+  def self.get_status(host, port=28960)
+    port ||= 28960
+    cmd = "getstatus"
+    CODInfo.request(cmd, host, port) do |resp, _|
+      break if resp.nil?
+      server = parse_statusResponse(resp)
+
+      p server
     end
   end
 
@@ -76,11 +90,16 @@ module CODInfo
     server = Hash.new
     data.split("\\")[1..-1].each_slice(2) { |x| server[x.first] = x.last }
 
-    sep = "\t|\t"
-    puts [ server['clients'] || 0, '/',
-      server['sv_maxclients'], sep, server['mapname'], sep,
-      server['gametype'], sep, server['hostname']
-    ].join
+    server
+  end
+
+  def self.parse_statusResponse(data)
+    data = expect_response(data, "statusResponse")
+
+    server = Hash.new
+    data.split("\\")[1..-1].each_slice(2) { |x| server[x.first] = x.last }
+
+    server
   end
 
 
@@ -104,5 +123,6 @@ module CODInfo
 end
 
 
-CODInfo.get_info(host, port)
+#CODInfo.get_info(host, port)
+CODInfo.get_status(host, port)
 #CODInfo.get_servers(host, port)
