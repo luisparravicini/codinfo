@@ -50,14 +50,9 @@ def parse_infoResponse(data)
   ].join
 end
 
-msg = "#{PROLOG}#{cmd}"
-
-socket = UDPSocket.new
-socket.send(msg, 0, host, port)
-resp = socket.recvfrom(65536) if select([socket], nil, nil, TIMEOUT)
-
 module CODInfo
   def self.get_info(host, port=28960)
+    port ||= 28960
     #TODO what is the xxx? sending 'getinfo' also works. but the 'xxx' is
     # what the game sends.
     cmd = "getinfo xxx"
@@ -71,6 +66,7 @@ module CODInfo
 
   # the default ip is queried by the game to refresh the server list
   def self.get_servers(host='63.146.124.21', port=20810)
+    port ||= 20810
     # TODO 6 ?
     cmd = "getservers 6 full empty"
     #TODO need to read all the responses, not just the first
