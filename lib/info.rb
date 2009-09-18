@@ -1,40 +1,8 @@
-#!/usr/bin/ruby
-
-#
-# Script to get information on cod4 servers.
-#
-#
-# By Luis Parravicini <lparravi@gmail.com>
-#
-
-require 'socket'
-
-
 TIMEOUT = 3
-PROLOG = "\xff\xff\xff\xff"
-
-
-class Server
-  attr_reader :port
-
-  def initialize(ip, port)
-    @ip = ip
-    @port = port
-  end
-
-  def ip
-    @ip.bytes.to_a.join(".")
-  end
-
-  def self.unpack(data)
-    ip = data[0, 4]
-    port = data[4, 2].unpack('n').first
-
-    Server.new(ip, port)
-  end
-end
 
 class CODInfo
+  PROLOG = "\xff\xff\xff\xff"
+
   attr_accessor :capture_response
 
   def get_info(host, port=28960)
@@ -132,20 +100,8 @@ class CODInfo
   def request(cmd, host, port)
     msg = "#{PROLOG}#{cmd}"
 
-    socket = UDPSocket.new
-    begin
-      socket.send(msg, 0, host, port)
-      #TODO loop
-      unless select([socket], nil, nil, TIMEOUT)
-        raise "timeout waiting for #{host}:#{port} data"
-      end
-
-      resp = socket.recvfrom(65536)
-      write_packet(resp.first) if capture_response
-
+    UDPRequester.request(msg, host, port) do |resp, socket|
       yield(resp, socket)
-    ensure
-      socket.close
     end
   end
 
@@ -158,16 +114,3 @@ class CODInfo
 
 end
 
-
-if __FILE__ == $0
-  host = ARGV.shift
-  port = ARGV.shift
-
-  raise "usage: #{$0} <host> [port]" if host.nil?
-
-  info = CODInfo.new
-#  info.capture_response = true
-  info.get_info(host, port)
-#  info.get_status(host, port)
-#  info.get_servers(host, port)
-end

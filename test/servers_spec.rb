@@ -1,7 +1,5 @@
-
-$LOAD_PATH << File.join(File.dirname(__FILE__), '..')
-
-require 'info'
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
+require 'codinfo'
 
 describe 'servers command (first response)'  do
   before do
