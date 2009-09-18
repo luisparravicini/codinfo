@@ -20,7 +20,7 @@ if __FILE__ == $0
   raise "usage: #{$0} <host> [port]" if host.nil?
 
   info = CODInfo.new
-#  info.capture_response = true
+#  info.requester.capture_response = true
   info.get_info(host, port)
 #  info.get_status(host, port)
 #  info.get_servers(host, port)

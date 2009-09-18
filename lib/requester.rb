@@ -1,8 +1,15 @@
 require 'socket'
 
-module UDPRequester
-  def self.request(msg, host, port)
-    socket = UDPSocket.new
+class UDPRequester
+  attr_accessor :socket_class
+  attr_accessor :capture_response
+
+  def initialize
+    @socket_class = UDPSocket
+  end
+
+  def request(msg, host, port)
+    socket = @socket_class.new
     begin
       socket.send(msg, 0, host, port)
       #TODO loop

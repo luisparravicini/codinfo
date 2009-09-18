@@ -3,7 +3,11 @@ TIMEOUT = 3
 class CODInfo
   PROLOG = "\xff\xff\xff\xff"
 
-  attr_accessor :capture_response
+  attr_accessor :requester
+
+  def initialize
+    @requester = UDPRequester.new
+  end
 
   def get_info(host, port=28960)
     port ||= 28960
@@ -100,7 +104,7 @@ class CODInfo
   def request(cmd, host, port)
     msg = "#{PROLOG}#{cmd}"
 
-    UDPRequester.request(msg, host, port) do |resp, socket|
+    @requester.request(msg, host, port) do |resp, socket|
       yield(resp, socket)
     end
   end
