@@ -14,6 +14,26 @@ TIMEOUT = 3
 PROLOG = "\xff\xff\xff\xff"
 
 
+class Server
+  attr_reader :port
+
+  def initialize(ip, port)
+    @ip = ip
+    @port = port
+  end
+
+  def ip
+    @ip.bytes.to_a.join(".")
+  end
+
+  def self.unpack(data)
+    ip = data[0, 4]
+    port = data[4, 2].unpack('n').first
+
+    Server.new(ip, port)
+  end
+end
+
 class CODInfo
   attr_accessor :capture_response
 
@@ -73,7 +93,6 @@ class CODInfo
     data
   end
 
-  Server = Struct.new(:ip, :port)
   def parse_serversResponse(data)
       data = expect_response(data, "getserversResponse")
 
@@ -86,10 +105,8 @@ class CODInfo
           puts "x.size != 6"
           next
         end
-        ip = x[0, 4]
-        port = x[4, 2].unpack('n').first
 
-        Server.new(ip, port)
+        Server.unpack(x)
       end.compact
       #TODO check the final EOT
   end
@@ -112,13 +129,13 @@ class CODInfo
     server
   end
 
-
   def request(cmd, host, port)
     msg = "#{PROLOG}#{cmd}"
 
     socket = UDPSocket.new
     begin
       socket.send(msg, 0, host, port)
+      #TODO loop
       unless select([socket], nil, nil, TIMEOUT)
         raise "timeout waiting for #{host}:#{port} data"
       end
