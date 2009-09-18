@@ -5,6 +5,7 @@ task :default => :tests
 
 desc "Run all tests"
 Spec::Rake::SpecTask.new('tests') do |t|
+  t.spec_opts = ['-f', 'specdoc']
   t.spec_files = FileList['test/*.rb']
 end
 

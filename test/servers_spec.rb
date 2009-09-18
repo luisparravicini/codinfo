@@ -3,19 +3,19 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), '..')
 
 require 'info'
 
-describe 'servers command' do
+describe 'servers command (first response)'  do
   before do
     @info = CODInfo.new
   end
 
-  it "should parse correctly a packet response" do
+  it "should parse a packet response" do
     resp = read_first_packet
     list = @info.parse_serversResponse([resp[2..-1]])
 
     list.size.should == 115
   end
 
-  it "should parse correctly each server port" do
+  it "should parse each server port" do
     resp = read_first_packet
     list = @info.parse_serversResponse([resp[2..-1]])
 
@@ -27,7 +27,7 @@ describe 'servers command' do
     end
   end
 
-  it "should parse correctly each server ip" do
+  it "should parse each server ip" do
     resp = read_first_packet
     list = @info.parse_serversResponse([resp[2..-1]])
 
