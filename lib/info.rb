@@ -45,7 +45,7 @@ class CODInfo
     # TODO 6 ?
     cmd = "getservers 6 full empty"
     #TODO need to read all the responses, not just the first
-    request(cmd, host, port) do |resp, _|
+    request_many(cmd, host, port) do |resp, _|
       break if resp.nil?
       server = parse_serversResponse(resp)
     end
@@ -101,6 +101,7 @@ class CODInfo
     server
   end
 
+  #TODO refactor with request_many
   def request(cmd, host, port)
     msg = "#{PROLOG}#{cmd}"
 
@@ -109,10 +110,11 @@ class CODInfo
     end
   end
 
-  def write_packet(resp)
-    File.open('responses', 'a') do |f|
-      f.write([resp.size].pack('n'))
-      f.write(resp)
+  def request_many(cmd, host, port)
+    msg = "#{PROLOG}#{cmd}"
+
+    @requester.request_many(msg, host, port) do |resp, socket|
+      yield(resp, socket)
     end
   end
 
