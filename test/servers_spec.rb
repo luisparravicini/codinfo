@@ -10,7 +10,7 @@ describe 'servers command (first response)'  do
     resp = read_first_packet
     list = @info.parse_serversResponse([resp[2..-1]])
 
-    list.size.should == 115
+    list.size.should == 111
   end
 
   it "should parse each server port" do

@@ -7,12 +7,12 @@ class Server
   end
 
   def ip
-    @ip.bytes.to_a.join(".")
+    @ip.join(".")
   end
 
   def self.unpack(data)
     ip = data[0, 4]
-    port = data[4, 2].unpack('n').first
+    port = (data[4] << 8) + data[5]
 
     Server.new(ip, port)
   end

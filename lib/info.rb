@@ -69,18 +69,19 @@ class CODInfo
   def parse_serversResponse(data)
       data = expect_response(data, "getserversResponse")
 
-      data = data.split(/\\/)
       # TODO what for is this \x0?
-      raise "error!?" unless data[0] == "\0"
-      raise "no EOT" unless data.last == 'EOT'
-      data[1..-2].map do |x|
-        if x.size != 6
-          puts "x.size != 6"
-          next
-        end
+      raise "error!?" unless data[0] == 0
+      raise "no EOT" unless data[-4..-1] == '\\EOT'
 
-        Server.unpack(x)
-      end.compact
+      data = data[1..-5]
+      raise "invalid data length (#{x.size})" if data.size % 7 != 0
+      result = []
+      data.bytes.to_a.each_slice(7) do |elem|
+        raise "invalid server prefix (#{elem.first})" unless elem.first == 92
+        result << Server.unpack(elem[1..-1])
+      end
+
+      result
   end
 
   def parse_infoResponse(data)
