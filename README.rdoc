@@ -5,7 +5,7 @@
 
 codinfo is a small library written to get info on Call of Duty 4 servers. Although not tested, it should work on almost any game using the Q3 protocol.
 
-<strong>Just found <a href="http://qstat.org/">Qstat</a>, which already does what codinfo is doing plus much more functionality.</strong>
+<b>Just found Qstat[http://qstat.org/], which already does what codinfo is doing plus much more functionality. So I wont continue developing this.</b> 
 == USAGE:
 
 irb(main):001:0> info = CODInfo.new
