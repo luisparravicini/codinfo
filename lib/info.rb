@@ -9,7 +9,7 @@ class CODInfo
     @requester = UDPRequester.new
   end
 
-  def get_info(host, port=28960)
+  def get_info(host, port=nil)
     port ||= 28960
     #TODO what is the xxx? sending 'getinfo' also works. but the 'xxx' is
     # what the game sends.
@@ -27,18 +27,17 @@ class CODInfo
     end
   end
 
-  def get_status(host, port=28960)
+  def get_status(host, port=nil)
     port ||= 28960
     cmd = "getstatus"
     request(cmd, host, port) do |resp, _|
       break if resp.nil?
-      server = parse_statusResponse(resp)
+      parse_statusResponse(resp)
     end
-    server
   end
 
   # the default ip is queried by the game to refresh the server list
-  def get_servers(host='63.146.124.21', port=20810)
+  def get_servers(host=nil, port=nil)
     host ||= '63.146.124.21'
     port ||= 20810
     # TODO 6 ?
