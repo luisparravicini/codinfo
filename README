@@ -1,0 +1,35 @@
+= COD4 Servers info
+
+* http://github.com/luisparravicini/codinfo
+
+== DESCRIPTION:
+
+codinfo is a small library written to get info on Call of Duty 4 servers. Although not tested, it should work on almost any game using the Q3 protocol.
+
+== USAGE:
+
+irb(main):001:0> info = CODInfo.new
+
+# returns a list of game servers:
+irb(main):002:0> servers = info.get_servers
+
+# getting info on a server:
+irb(main):003:0> info.get_info(servers.first)
+or
+irb(main):003:0> info.get_info('192.168.1.2')
+
+
+
+== REQUIREMENTS:
+
+* Ruby 1.8.7+
+* Rake and rspec if you want to run the tests
+
+
+== INSTALL:
+
+use the source
+
+== LICENSE:
+
+codinfo is released under the terms of the Apache License 2.0
