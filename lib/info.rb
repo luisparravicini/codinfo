@@ -10,25 +10,28 @@ class CODInfo
   end
 
   def get_info(host, port=nil)
-    port ||= 28960
+    if host.is_a?(Server)
+      port = host.port
+      host = host.ip
+    else
+      port ||= 28960
+    end
     #TODO what is the xxx? sending 'getinfo' also works. but the 'xxx' is
     # what the game sends.
     cmd = "getinfo xxx"
     request(cmd, host, port) do |resp, _|
       break if resp.nil?
-      #p resp
-      server = parse_infoResponse(resp)
-
-      sep = "\t|\t"
-      puts [ server['clients'] || 0, '/',
-        server['sv_maxclients'], sep, server['mapname'], sep,
-        server['gametype'], sep, server['hostname']
-      ].join
+      parse_infoResponse(resp)
     end
   end
 
   def get_status(host, port=nil)
-    port ||= 28960
+    if host.is_a?(Server)
+      port = host.port
+      host = host.ip
+    else
+      port ||= 28960
+    end
     cmd = "getstatus"
     request(cmd, host, port) do |resp, _|
       break if resp.nil?

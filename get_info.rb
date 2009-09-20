@@ -19,6 +19,12 @@ raise "usage: #{$0} <host> [port]" if host.nil?
 
 info = CODInfo.new
 #  info.requester.capture_response = true
-info.get_info(host, port)
-#  info.get_status(host, port)
-#  info.get_servers(host, port)
+#  server = info.get_status(host, port)
+#  servers = info.get_servers
+server = info.get_info(host, port)
+
+sep = "\t|\t"
+puts [ server['clients'] || 0, '/',
+        server['sv_maxclients'], sep, server['mapname'], sep,
+        server['gametype'], sep, server['hostname']
+].join
