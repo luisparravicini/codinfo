@@ -11,11 +11,15 @@ codinfo is a small library written to get info on Call of Duty 4 servers. Althou
 irb(main):001:0> info = CODInfo.new
 
 # returns a list of game servers:
+
 irb(main):002:0> servers = info.get_servers
 
 # getting info on a server:
+
 irb(main):003:0> info.get_info(servers.first)
+
 or
+
 irb(main):003:0> info.get_info('192.168.1.2')
 
 
