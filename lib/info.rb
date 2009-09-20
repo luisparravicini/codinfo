@@ -33,9 +33,8 @@ class CODInfo
     request(cmd, host, port) do |resp, _|
       break if resp.nil?
       server = parse_statusResponse(resp)
-
-      p server
     end
+    server
   end
 
   # the default ip is queried by the game to refresh the server list
@@ -44,11 +43,14 @@ class CODInfo
     port ||= 20810
     # TODO 6 ?
     cmd = "getservers 6 full empty"
+    servers = []
     #TODO need to read all the responses, not just the first
     request_many(cmd, host, port) do |resp, _|
       break if resp.nil?
-      server = parse_serversResponse(resp)
+      servers += parse_serversResponse(resp)
     end
+
+    servers
   end
 
 #  private
@@ -69,7 +71,7 @@ class CODInfo
       data = expect_response(data, "getserversResponse")
 
       data = data.split(/\\/)
-      # TODO why?
+      # TODO what for is this \x0?
       raise "error!?" unless data[0] == "\0"
       raise "no EOT" unless data.last == 'EOT'
       data[1..-2].map do |x|
@@ -80,7 +82,6 @@ class CODInfo
 
         Server.unpack(x)
       end.compact
-      #TODO check the final EOT
   end
 
   def parse_infoResponse(data)
